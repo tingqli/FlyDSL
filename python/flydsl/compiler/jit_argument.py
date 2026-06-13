@@ -182,6 +182,7 @@ class TensorAdaptor:
         # slices, multi-stride-1 broadcasts -- where C++ markLayoutDynamic
         # throws RuntimeError or no stride-1 dim is found.
         try:
+            raise RuntimeError("force layout static")
             self.tensor_adaptor.mark_layout_dynamic(-1, 1)
             self._dyn_leading_dim = next(i for i, s in enumerate(self._orig_strides) if int(s) == 1)
             self._is_layout_dynamic = True

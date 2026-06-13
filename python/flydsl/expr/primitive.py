@@ -771,7 +771,7 @@ def get_1d_coord(index, layout, loc=None, ip=None):
 
 @traced_op
 def coalesce(layout, pattern=None, loc=None, ip=None):
-    return fly.coalesce(layout, pattern=pattern, loc=loc, ip=ip)
+    return fly.coalesce(layout, attr=pattern, loc=loc, ip=ip)
 
 
 @traced_op
