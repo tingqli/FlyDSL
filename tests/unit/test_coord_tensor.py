@@ -5,6 +5,9 @@ from __future__ import annotations
 
 import pytest
 
+import flydsl.compiler as flyc
+import flydsl.expr as fx
+
 try:
     import torch
 except ImportError:
@@ -13,9 +16,6 @@ except ImportError:
 pytestmark = [pytest.mark.l2_device, pytest.mark.rocm_lower]
 if torch is None or not torch.cuda.is_available():
     pytest.skip("CUDA/ROCm not available", allow_module_level=True)
-
-import flydsl.compiler as flyc
-import flydsl.expr as fx
 
 
 def test_coord_tensor_slicing():
@@ -32,11 +32,7 @@ def test_coord_tensor_slicing():
 
     @flyc.jit
     def test(i: fx.Int32, output: fx.Tensor):
-        kernel(i, output).launch(
-            grid=(1, 1, 1),
-            block=(1, 1, 1),
-            stream=fx.Stream(None)
-        )
+        kernel(i, output).launch(grid=(1, 1, 1), block=(1, 1, 1), stream=fx.Stream(None))
 
     output = torch.zeros(2, dtype=torch.int32, device="cuda", requires_grad=False)
     test(6, output)
