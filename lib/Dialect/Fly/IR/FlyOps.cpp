@@ -1509,7 +1509,7 @@ FLY_INFER_RETURN_TYPES(TiledCopyPartitionSrcOp) {
   LayoutBuilder<LayoutAttr> builder(context);
   LayoutAttr thrValView =
       layoutTiledCopyThrValViewSrc(builder, copyAtom, tiledLayoutThrVal, tileMN, srcLayout);
-    
+
   if (thrIdx.isLeafInt()) {
     if (thrIdx.getLeafAsInt().getValue() < 0) {
       inferredReturnTypes.assign({RebuildLayoutLikeType(srcTy, thrValView)});
@@ -1574,7 +1574,6 @@ FLY_INFER_RETURN_TYPES(TiledCopyPartitionDstOp) {
       return success();
     }
   }
-
 
   SmallVector<Attribute> coordElems;
   coordElems.push_back(thrIdx);
