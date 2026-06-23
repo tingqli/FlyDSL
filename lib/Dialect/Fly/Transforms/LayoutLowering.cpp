@@ -1795,15 +1795,12 @@ public:
     LayoutValueAdaptor thrValView =
         ThrValViewFunc(layoutBuilder, copyAtom, tiledLayoutThrVal, tileMN, outerAdaptor);
 
-    auto crd = coordTy.getAttr();
-    if (crd.isLeafInt()) {
-      if (crd.getLeafAsInt().getValue() < 0) {
-        LayoutValueAdaptor theThrValView =
-            replaceLeafOuterLayout(layoutBuilder, fullLayoutAdaptor, thrValView);
-        Value new_view = MakeViewOp::create(rewriter, loc, iter, theThrValView.getValue());
-        rewriter.replaceOp(op, new_view);
-        return success();
-      }
+    if (coordTy.getAttr().isLeafStaticValue(-1)) {
+      LayoutValueAdaptor thrValViewLayout =
+          replaceLeafOuterLayout(layoutBuilder, fullLayoutAdaptor, thrValView);
+      Value fullPartitionView = MakeViewOp::create(rewriter, loc, iter, thrValViewLayout.getValue());
+      rewriter.replaceOp(op, fullPartitionView);
+      return success();
     }
 
     auto thrValShape = layoutBuilder.getShape(thrValView);
