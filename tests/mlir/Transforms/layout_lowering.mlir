@@ -402,8 +402,10 @@ func.func @test_tiled_copy_partition_src_full_view(
   // CHECK-NOT: fly.tiled_copy.partition_src
   // CHECK-NOT: fly.slice
   // CHECK-NOT: fly.add_offset
-  // CHECK: fly.make_view
+  // CHECK: %[[PART:.*]] = fly.make_view
+  // CHECK-NOT: fly.make_view
   %partition = fly.tiled_copy.partition_src(%tiled_copy, %src, %sentinel) : (!fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>, !fly.memref<i32, global, (128,128):(1,0)>, !fly.int_tuple<-1>) -> !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
+  // CHECK: return %[[PART]]
   return %partition : !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
 }
 
@@ -420,8 +422,10 @@ func.func @test_tiled_copy_partition_dst_full_view(
   // CHECK-NOT: fly.tiled_copy.partition_dst
   // CHECK-NOT: fly.slice
   // CHECK-NOT: fly.add_offset
-  // CHECK: fly.make_view
+  // CHECK: %[[PART:.*]] = fly.make_view
+  // CHECK-NOT: fly.make_view
   %partition = fly.tiled_copy.partition_dst(%tiled_copy, %src, %sentinel) : (!fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>, !fly.memref<i32, global, (128,128):(1,0)>, !fly.int_tuple<-1>) -> !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
+  // CHECK: return %[[PART]]
   return %partition : !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
 }
 
