@@ -929,14 +929,15 @@ struct PyCopyOpUniversalAtomicType : PyConcreteType<PyCopyOpUniversalAtomicType>
   static void bindDerived(ClassTy &c) {
     c.def_static(
         "get",
-        [](int32_t atomicOp, PyType &valTypeObj, std::string syncscope, DefaultingPyMlirContext context) {
+        [](int32_t atomicOp, PyType &valTypeObj, std::string syncscope,
+           DefaultingPyMlirContext context) {
           MLIRContext *ctx = unwrap(context.get()->get());
           auto atomicOpAttr =
               ::mlir::fly::AtomicOpAttr::get(ctx, static_cast<::mlir::fly::AtomicOp>(atomicOp));
           auto syncscopeAttr = ::mlir::StringAttr::get(ctx, syncscope);
-          return PyCopyOpUniversalAtomicType(
-              context->getRef(),
-              wrap(CopyOpUniversalAtomicType::get(atomicOpAttr, unwrap(valTypeObj), syncscopeAttr)));
+          return PyCopyOpUniversalAtomicType(context->getRef(),
+                                             wrap(CopyOpUniversalAtomicType::get(
+                                                 atomicOpAttr, unwrap(valTypeObj), syncscopeAttr)));
         },
         "atomic_op"_a, "val_type"_a, "syncscope"_a = "", nb::kw_only(), "context"_a = nb::none(),
         "Create a CopyOpUniversalAtomicType with atomic op and value type");

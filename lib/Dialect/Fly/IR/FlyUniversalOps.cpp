@@ -251,8 +251,8 @@ FailureOr<Value> CopyOpUniversalAtomicType::emitAtomCallSSA(OpBuilder &builder, 
   if (!binOp)
     return failure();
   StringRef syncscope = getSyncscope().getValue();
-  LLVM::AtomicRMWOp::create(builder, loc, *binOp, dstPtr, src,
-                            LLVM::AtomicOrdering::monotonic, syncscope);
+  LLVM::AtomicRMWOp::create(builder, loc, *binOp, dstPtr, src, LLVM::AtomicOrdering::monotonic,
+                            syncscope);
   return src;
 }
 
