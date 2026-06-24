@@ -250,7 +250,9 @@ FailureOr<Value> CopyOpUniversalAtomicType::emitAtomCallSSA(OpBuilder &builder, 
   auto binOp = convertAtomicOp(getAtomicOp().getValue(), isFloat);
   if (!binOp)
     return failure();
-  LLVM::AtomicRMWOp::create(builder, loc, *binOp, dstPtr, src, LLVM::AtomicOrdering::monotonic);
+  StringRef syncscope = getSyncscope().getValue();
+  LLVM::AtomicRMWOp::create(builder, loc, *binOp, dstPtr, src,
+                            LLVM::AtomicOrdering::monotonic, syncscope);
   return src;
 }
 
