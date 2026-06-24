@@ -13,6 +13,7 @@ from .._mlir.dialects import fly
 from .._mlir.dialects.fly import (
     AddressSpace,
     AtomicOp,
+    AtomicSyncScope,
     BasisType,
     CachePolicy,
     ComposedLayoutType,
@@ -45,6 +46,7 @@ __all__ = [
     # "arith",
     # Enum Attributes
     "AtomicOp",
+    "AtomicSyncScope",
     "AddressSpace",
     "CachePolicy",
     "MmaOperand",
@@ -200,28 +202,28 @@ UniversalCopy32b = lambda: CopyOpUniversalCopyType.get(32)
 UniversalCopy64b = lambda: CopyOpUniversalCopyType.get(64)
 UniversalCopy128b = lambda: CopyOpUniversalCopyType.get(128)
 
-UniversalAtomic = lambda atomic_op, val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomic = lambda atomic_op, val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(atomic_op), val_type.ir_type, syncscope
 )
-UniversalAtomicAdd = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicAdd = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.Add), val_type.ir_type, syncscope
 )
-UniversalAtomicMax = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicMax = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.Max), val_type.ir_type, syncscope
 )
-UniversalAtomicMin = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicMin = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.Min), val_type.ir_type, syncscope
 )
-UniversalAtomicAnd = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicAnd = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.And), val_type.ir_type, syncscope
 )
-UniversalAtomicOr = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicOr = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.Or), val_type.ir_type, syncscope
 )
-UniversalAtomicInc = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicInc = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.Inc), val_type.ir_type, syncscope
 )
-UniversalAtomicDec = lambda val_type, syncscope="agent": CopyOpUniversalAtomicType.get(
+UniversalAtomicDec = lambda val_type, syncscope=AtomicSyncScope.Agent: CopyOpUniversalAtomicType.get(
     int(AtomicOp.Dec), val_type.ir_type, syncscope
 )
 

@@ -47,6 +47,12 @@ def Fly_AtomicOp : Fly_I32EnumAttr<"AtomicOp", "", [
 ]>;
 def Fly_AtomicOpAttr : Fly_EnumAttr<Fly_AtomicOp, "atomic_op"> {}
 
+def Fly_AtomicSyncScope : Fly_I32EnumAttr<"AtomicSyncScope", "", [
+  I32EnumAttrCase<"Agent", 0, "agent">,
+  I32EnumAttrCase<"System", 1, "system">,
+]>;
+def Fly_AtomicSyncScopeAttr : Fly_EnumAttr<Fly_AtomicSyncScope, "atomic_sync_scope"> {}
+
 def Fly_GemmTraversalOrder : Fly_I32EnumAttr<"GemmTraversalOrder", "", [
   I32EnumAttrCase<"KMN", 0, "kmn">,
   I32EnumAttrCase<"KNM", 1, "knm">,

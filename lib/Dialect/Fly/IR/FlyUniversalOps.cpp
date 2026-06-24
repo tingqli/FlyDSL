@@ -232,6 +232,16 @@ static std::optional<LLVM::AtomicBinOp> convertAtomicOp(AtomicOp binOp, bool isF
   return std::nullopt;
 }
 
+static StringRef convertAtomicSyncScope(AtomicSyncScopeAttr syncscope) {
+  switch (syncscope.getValue()) {
+  case AtomicSyncScope::System:
+    return "";
+  case AtomicSyncScope::Agent:
+    return "agent";
+  }
+  return "";
+}
+
 FailureOr<Value> CopyOpUniversalAtomicType::emitAtomCallSSA(OpBuilder &builder, Location loc,
                                                             Type resultTy, Type copyAtomTyArg,
                                                             Type srcTyArg, Type dstTyArg,
@@ -250,9 +260,8 @@ FailureOr<Value> CopyOpUniversalAtomicType::emitAtomCallSSA(OpBuilder &builder, 
   auto binOp = convertAtomicOp(getAtomicOp().getValue(), isFloat);
   if (!binOp)
     return failure();
-  StringRef syncscope = getSyncscope().getValue();
   LLVM::AtomicRMWOp::create(builder, loc, *binOp, dstPtr, src, LLVM::AtomicOrdering::monotonic,
-                            syncscope);
+                            convertAtomicSyncScope(getSyncscope()));
   return src;
 }
 
