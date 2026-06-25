@@ -424,3 +424,80 @@ func.func @test_equal_int_vs_basis() -> i1 {
   %r = fly.equal(%a, %b) : (!fly.int_tuple<(1)>, !fly.int_tuple<(1E0)>) -> i1
   return %r : i1
 }
+// === TiledCopy Partition ===
+
+// CHECK-LABEL: @test_tiled_copy_partition_src_full_view
+func.func @test_tiled_copy_partition_src_full_view(
+  %ptr: !fly.ptr<i32, global>,
+  %tiled_copy: !fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>) -> !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))> {
+
+  %34 = fly.make_int_tuple() : () -> !fly.int_tuple<(128,128)>
+  %35 = fly.make_int_tuple() : () -> !fly.int_tuple<(1,0)>
+  %layout = fly.make_layout(%34, %35) : (!fly.int_tuple<(128,128)>, !fly.int_tuple<(1,0)>) -> !fly.layout<(128,128):(1,0)>
+  %src = fly.make_view(%ptr, %layout) : (!fly.ptr<i32, global>, !fly.layout<(128,128):(1,0)>) -> !fly.memref<i32, global, (128,128):(1,0)>
+  %sentinel = fly.make_int_tuple() : () -> !fly.int_tuple<-1>
+  // CHECK-NOT: fly.tiled_copy.partition_src
+  // CHECK-NOT: fly.slice
+  // CHECK-NOT: fly.add_offset
+  // CHECK: %[[PART:.*]] = fly.make_view
+  // CHECK-NOT: fly.make_view
+  %partition = fly.tiled_copy.partition_src(%tiled_copy, %src, %sentinel) : (!fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>, !fly.memref<i32, global, (128,128):(1,0)>, !fly.int_tuple<-1>) -> !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
+  // CHECK: return %[[PART]]
+  return %partition : !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
+}
+
+// CHECK-LABEL: @test_tiled_copy_partition_dst_full_view
+func.func @test_tiled_copy_partition_dst_full_view(
+  %ptr: !fly.ptr<i32, global>,
+  %tiled_copy: !fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>) -> !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))> {
+
+  %34 = fly.make_int_tuple() : () -> !fly.int_tuple<(128,128)>
+  %35 = fly.make_int_tuple() : () -> !fly.int_tuple<(1,0)>
+  %layout = fly.make_layout(%34, %35) : (!fly.int_tuple<(128,128)>, !fly.int_tuple<(1,0)>) -> !fly.layout<(128,128):(1,0)>
+  %src = fly.make_view(%ptr, %layout) : (!fly.ptr<i32, global>, !fly.layout<(128,128):(1,0)>) -> !fly.memref<i32, global, (128,128):(1,0)>
+  %sentinel = fly.make_int_tuple() : () -> !fly.int_tuple<-1>
+  // CHECK-NOT: fly.tiled_copy.partition_dst
+  // CHECK-NOT: fly.slice
+  // CHECK-NOT: fly.add_offset
+  // CHECK: %[[PART:.*]] = fly.make_view
+  // CHECK-NOT: fly.make_view
+  %partition = fly.tiled_copy.partition_dst(%tiled_copy, %src, %sentinel) : (!fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>, !fly.memref<i32, global, (128,128):(1,0)>, !fly.int_tuple<-1>) -> !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
+  // CHECK: return %[[PART]]
+  return %partition : !fly.memref<i32, global, ((32,8),(4,1),(16,1)):((0,1),(0,0),(8,0))>
+}
+
+// CHECK-LABEL: @test_tiled_copy_partition_src_thread_view
+func.func @test_tiled_copy_partition_src_thread_view(
+  %ptr: !fly.ptr<i32, global>,
+  %tid: i32,
+  %tiled_copy: !fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>) -> !fly.memref<i32, global, ((4,1),16,1):((0,0),8,0)> {
+
+  %34 = fly.make_int_tuple() : () -> !fly.int_tuple<(128,128)>
+  %35 = fly.make_int_tuple() : () -> !fly.int_tuple<(1,0)>
+  %layout = fly.make_layout(%34, %35) : (!fly.int_tuple<(128,128)>, !fly.int_tuple<(1,0)>) -> !fly.layout<(128,128):(1,0)>
+  %src = fly.make_view(%ptr, %layout) : (!fly.ptr<i32, global>, !fly.layout<(128,128):(1,0)>) -> !fly.memref<i32, global, (128,128):(1,0)>
+  %slice_id = fly.make_int_tuple(%tid) : (i32) -> !fly.int_tuple<?>
+  // CHECK-NOT: fly.tiled_copy.partition_src
+  // CHECK: fly.add_offset
+  // CHECK: fly.make_view
+  %partition = fly.tiled_copy.partition_src(%tiled_copy, %src, %slice_id) : (!fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>, !fly.memref<i32, global, (128,128):(1,0)>, !fly.int_tuple<?>) -> !fly.memref<i32, global, ((4,1),16,1):((0,0),8,0)>
+  return %partition : !fly.memref<i32, global, ((4,1),16,1):((0,0),8,0)>
+}
+
+// CHECK-LABEL: @test_tiled_copy_partition_dst_thread_view
+func.func @test_tiled_copy_partition_dst_thread_view(
+  %ptr: !fly.ptr<i32, global>,
+  %tid: i32,
+  %tiled_copy: !fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>) -> !fly.memref<i32, global, ((4,1),16,1):((0,0),8,0)> {
+
+  %34 = fly.make_int_tuple() : () -> !fly.int_tuple<(128,128)>
+  %35 = fly.make_int_tuple() : () -> !fly.int_tuple<(1,0)>
+  %layout = fly.make_layout(%34, %35) : (!fly.int_tuple<(128,128)>, !fly.int_tuple<(1,0)>) -> !fly.layout<(128,128):(1,0)>
+  %src = fly.make_view(%ptr, %layout) : (!fly.ptr<i32, global>, !fly.layout<(128,128):(1,0)>) -> !fly.memref<i32, global, (128,128):(1,0)>
+  %slice_id = fly.make_int_tuple(%tid) : (i32) -> !fly.int_tuple<?>
+  // CHECK-NOT: fly.tiled_copy.partition_dst
+  // CHECK: fly.add_offset
+  // CHECK: fly.make_view
+  %partition = fly.tiled_copy.partition_dst(%tiled_copy, %src, %slice_id) : (!fly.tiled_copy<!fly.copy_atom<!fly.universal_copy<128>, 32>, !fly.layout<((32,8),4):((32,1),8)>, !fly.tile<[8|128]>>, !fly.memref<i32, global, (128,128):(1,0)>, !fly.int_tuple<?>) -> !fly.memref<i32, global, ((4,1),16,1):((0,0),8,0)>
+  return %partition : !fly.memref<i32, global, ((4,1),16,1):((0,0),8,0)>
+}
