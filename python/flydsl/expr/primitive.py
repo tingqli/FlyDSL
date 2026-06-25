@@ -910,28 +910,28 @@ def left_inverse(layout):
 @dsl_loc_tracing
 def logical_divide(layout, divisor):
     if not isinstance(divisor, ir.Value):
-        divisor = make_tile(*divisor)
+        divisor = _make_tile_or_layout(divisor)
     return fly.logical_divide(layout, divisor)
 
 
 @dsl_loc_tracing
 def zipped_divide(layout, divisor):
     if not isinstance(divisor, ir.Value):
-        divisor = make_tile(*divisor)
+        divisor = _make_tile_or_layout(divisor)
     return fly.zipped_divide(layout, divisor)
 
 
 @dsl_loc_tracing
 def tiled_divide(layout, divisor):
     if not isinstance(divisor, ir.Value):
-        divisor = make_tile(*divisor)
+        divisor = _make_tile_or_layout(divisor)
     return fly.tiled_divide(layout, divisor)
 
 
 @dsl_loc_tracing
 def flat_divide(layout, divisor):
     if not isinstance(divisor, ir.Value):
-        divisor = make_tile(*divisor)
+        divisor = _make_tile_or_layout(divisor)
     return fly.flat_divide(layout, divisor)
 
 
@@ -1366,8 +1366,15 @@ def make_tile(*args):
         raise ValueError(f"make_tile: expected int, None, tuple, or Layout, got {type(m)}")
 
     resolved = [_resolve(m) for m in args]
-    if len(resolved) == 1:
-        tile_type = TileType.get(resolved[0])
-    else:
-        tile_type = TileType.get(resolved)
+    tile_type = TileType.get(resolved)
     return static(tile_type)
+
+
+def _make_tile_or_layout(args):
+    if isinstance(args, ir.Value):
+        return args
+    if isinstance(args, int):
+        return make_layout(args, 1)
+    if isinstance(args, tuple):
+        return make_tile(*args)
+    raise ValueError(f"make_tile_or_layout: expected int, tuple, or Layout, got {type(args)}")

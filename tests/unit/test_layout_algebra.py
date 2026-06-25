@@ -323,6 +323,52 @@ def test_flat_divide(frontend_only_jit):
     build()
 
 
+def test_divide_bymode(frontend_only_jit):
+
+    @flyc.jit
+    def build():
+        a = fx.make_layout((64, 50, 80), (16000, 160, 1))
+        assert str(fx.logical_divide(a, 32)) == str(fx.make_layout((32, (2, 50, 80)), (16000, (512000, 160, 1))))
+        assert str(fx.zipped_divide(a, 32)) == str(fx.make_layout((32, (2, 50, 80)), (16000, (512000, 160, 1))))
+        assert str(fx.tiled_divide(a, 32)) == str(fx.make_layout((32, 2, 50, 80), (16000, 512000, 160, 1)))
+        assert str(fx.flat_divide(a, 32)) == str(fx.make_layout((32, 2, 50, 80), (16000, 512000, 160, 1)))
+
+        assert str(fx.logical_divide(a, (32,))) == str(fx.make_layout(((32, 2), 50, 80), ((16000, 512000), 160, 1)))
+        assert str(fx.zipped_divide(a, (32,))) == str(
+            fx.make_layout(((32,), (2, 50, 80)), ((16000,), (512000, 160, 1)))
+        )
+        assert str(fx.tiled_divide(a, (32,))) == str(fx.make_layout(((32,), 2, 50, 80), ((16000,), 512000, 160, 1)))
+        assert str(fx.flat_divide(a, (32,))) == str(fx.make_layout((32, 2, 50, 80), (16000, 512000, 160, 1)))
+
+        assert str(fx.logical_divide(a, (32, None, None))) == str(
+            fx.make_layout(((32, 2), 50, 80), ((16000, 512000), 160, 1))
+        )
+        assert str(fx.zipped_divide(a, (32, None, None))) == str(
+            fx.make_layout(((32, 1, 1), (2, 50, 80)), ((16000, 0, 0), (512000, 160, 1)))
+        )
+        assert str(fx.tiled_divide(a, (32, None, None))) == str(
+            fx.make_layout(((32, 1, 1), 2, 50, 80), ((16000, 0, 0), 512000, 160, 1))
+        )
+        assert str(fx.flat_divide(a, (32, None, None))) == str(
+            fx.make_layout((32, 1, 1, 2, 50, 80), (16000, 0, 0, 512000, 160, 1))
+        )
+
+        assert str(fx.logical_divide(a, (32, None, 40))) == str(
+            fx.make_layout(((32, 2), 50, (40, 2)), ((16000, 512000), 160, (1, 40)))
+        )
+        assert str(fx.zipped_divide(a, (32, None, 40))) == str(
+            fx.make_layout(((32, 1, 40), (2, 50, 2)), ((16000, 0, 1), (512000, 160, 40)))
+        )
+        assert str(fx.tiled_divide(a, (32, None, 40))) == str(
+            fx.make_layout(((32, 1, 40), 2, 50, 2), ((16000, 0, 1), 512000, 160, 40))
+        )
+        assert str(fx.flat_divide(a, (32, None, 40))) == str(
+            fx.make_layout((32, 1, 40, 2, 50, 2), (16000, 0, 1, 512000, 160, 40))
+        )
+
+    build()
+
+
 # ==============================================================================
 # 6. Product Operations (Cells 25, 27, 29)
 # ==============================================================================
