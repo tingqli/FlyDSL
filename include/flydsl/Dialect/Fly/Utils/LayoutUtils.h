@@ -568,11 +568,10 @@ typename LayoutBuilder<Layout>::IntTuple layoutCoshape(LayoutBuilder<Layout> &bu
   IntTuple stride = builder.getStride(layout);
   IntTuple one = builder.materializeConstantLeaf(1);
 
-  IntTuple m1Shapes = intTupleTransformLeaf(
-      builder, [&](IntTuple s) { return builder.sub(s, one); }, shape);
+  IntTuple m1Shapes =
+      intTupleTransformLeaf(builder, [&](IntTuple s) { return builder.sub(s, one); }, shape);
   IntTuple coCoord = intTupleInnerProduct(builder, m1Shapes, stride);
-  return intTupleTransformLeaf(
-      builder, [&](IntTuple c) { return builder.add(c, one); }, coCoord);
+  return intTupleTransformLeaf(builder, [&](IntTuple c) { return builder.add(c, one); }, coCoord);
 }
 
 template <class Layout>
